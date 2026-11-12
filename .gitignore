@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+**/.idea/**
+**/pyproject.toml
+**/uv.lock
+**/.python-version
+**/.venv
+.venv
+
 # Distribution / packaging
 .Python
 build/
