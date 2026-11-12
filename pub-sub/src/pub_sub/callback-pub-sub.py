@@ -12,23 +12,26 @@ def run_publisher(redis_client, channel: str, count: int=10):
         print(subscribers)
         time.sleep(0.001)
 
+def subscriber_callback(message):
+        data = message["data"]
+        channel = message["channel"]
+        print(f"  [Callback] Received on '{channel}': {data}")
 
 def main():
-    channel = "channel"
+    channel = "call-back-channel"
     redis_client = redis.Redis(
         host='localhost',
         port=6379,
         decode_responses=True
     )
 
-    pub_thread = threading.Thread(target=run_publisher, args=(redis_client, channel))
     sub = redis_client.pubsub()
-    sub.subscribe(channel)
-    sub_thread = threading.Thread(target=run_subscriber, args=(sub, "Thread Channel"))
-    sub_thread.start()
-    pub_thread.start()
-    sub_thread.join()
-    pub_thread.join()
+    sub.subscribe(**{"call-back-channel":subscriber_callback})
+    sub_worker = sub.run_in_thread(sleep_time=0.1)
+    run_publisher(redis_client, channel)
+
+    sub_worker.stop()
+    sub_worker.join()
 
     print("main done")
 
